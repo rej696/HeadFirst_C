@@ -1,25 +1,34 @@
-run: main.c
+run: build
 	./build/test
 
-main.c: lib
-	gcc main.c -L ./lib -l hfsecurity -o build/test
+build: src/main.c lib include/encrypt.h include/checksum.h
+	gcc src/main.c -I ./include -L ./lib -l hfsecurity -o build/test
 
 lib: lib/libhfsecurity.a
 
 lib/libhfsecurity.a: build/encrypt.o build/checksum.o init
 	ar -rcs lib/libhfsecurity.a build/encrypt.o build/checksum.o
 
-build/encrypt.o: init
-	gcc -c encrypt.c -o build/encrypt.o
+include/encrypt.h: src/encrypt.h
+	cp src/encrypt.h include/encrypt.h
 
-build/checksum.o: init
-	gcc -c checksum.c -o build/checksum.o
+build/encrypt.o: src/encrypt.c init
+	gcc -c src/encrypt.c -o build/encrypt.o
 
-init: clean
-	mkdir build
-	mkdir lib
+include/checksum.h: src/checksum.h
+	cp src/checksum.h include/checksum.h
+
+build/checksum.o: src/encrypt.c init
+	cp src/checksum.h include/checksum.h
+	gcc -c src/checksum.c -o build/checksum.o
+
+init:
+	mkdir -p build
+	mkdir -p lib
+	mkdir -p include
 
 clean:
-	rm -r build
-	rm -r lib
+	rm -rf build
+	rm -rf lib
+	rm -rf include
 	
